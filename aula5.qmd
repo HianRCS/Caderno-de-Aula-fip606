@@ -1,0 +1,84 @@
+---
+title: "Gráficos Diversos"
+format: html
+editor: visual
+warning: false
+mensage: false
+---
+
+## Análise das notas das sabatinas
+
+Os gráficos apresentam as notas das sabtinas 1 e 2, onde também é possivel visualizar a média das notas das duas satinas, e no chunk 1 foi carregado as funções do tidyverse, gsheet e ggthemes, e a partir disso foi possivel usar os dados da internet atráves do link disponibilizado, também foi separado as sabatinas em 1 e 2 calculado suas médias, e por fim feito um gráfico histogram com os dados trabalhados.
+
+```{r}
+
+library(tidyverse)
+library(gsheet)
+library(ggthemes)
+
+notas <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=1092065531")
+  
+notas1 <- notas |>
+  select(prova, nota) |>
+  filter(prova == "1")
+notas1
+
+notas2 <- notas |>
+  select(prova, nota) |>
+  filter(prova == "2")
+notas2
+
+media1 <- mean(notas1$nota)
+media2 <- mean(notas2$nota)
+
+notas |>
+  ggplot(aes(x = nota))+
+  geom_histogram(bins = 5, fill = "darkred", color = "white")+
+  facet_wrap(~prova)+
+  labs(y = "frequência",
+       x = "nota")+
+  geom_vline(xintercept = media1, color = "black", linetype = "dashed")
+notas$prova <- factor(notas$prova, labels = c("sabatina 1", "sabatina 2"))
+  
+
+
+
+
+```
+
+# Gráfico box plot
+
+o gráfico box plot apresenta a dispersão das notas da sabatina 1 e 2 bem como sua média, e no chunk 2 foi carregado a função ggplot2, e feito um gráfico com os dados anteriores.
+
+```{r}
+library(ggplot2)
+
+notas |>
+  ggplot(aes(pontos, nota, factor()))+
+  geom_boxplot(fill = "lightblue")+
+  facet_wrap(~prova)+
+  geom_jitter(size = 0.92)
+  
+
+
+```
+
+# Gráfico geom point
+
+no gráfico geom point mostra com mais precisão a média das sabatinas 1 e 2, e no chunk 3 foi feito um gráfico geom point com o errobar.
+
+```{r}
+
+notas |>
+  group_by(prova)|>
+  summarise(nota_mean = mean (nota),
+            nota_sd = sd (nota)) |>
+  ggplot(aes (factor(prova),nota_mean, color = prova))+
+  geom_point(size = 2.5)+
+  geom_errorbar(aes(ymin = nota_mean - nota_sd,
+                    ymax = nota_mean + nota_sd),
+                width = 0.1)+
+  ylim(0,120)+
+  theme(legend.position = "none")
+
+```

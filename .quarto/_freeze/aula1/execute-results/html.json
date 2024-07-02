@@ -1,0 +1,14 @@
+{
+  "hash": "bbd17894b64f4dca8c21dfa7205e942d",
+  "result": {
+    "markdown": "---\ntitle: \"Introdução ao R studio\"\nformat: html\neditor: visual\n---\n\n\n## R studio\n\nO RStudio é um ambiente de desenvolvimento integrado (IDE) gratuito e de código aberto para a linguagem de programação R. Ele oferece uma interface gráfica amigável e diversos recursos que facilitam a escrita, execução, depuração e análise de código R.\n\n## Arquivo qmd\n\nOs arquivos QMD (Quarto Markdown) são uma ferramenta poderosa para criar documentos dinâmicos e interativos no RStudio. Eles combinam a flexibilidade do Markdown para formatação de texto com o poder do código R para análise de dados, visualizações e geração de relatórios, em essência, os arquivos QMD são arquivos de texto simples que usam a sintaxe do Markdown para formatar o conteúdo textual e tags especiais para incorporar código R.\n\n## Renderizar o Documento\n\nQuando você clicar no botão Renderizar, um documento será gerado que inclui tanto o conteúdo quanto a saída do código incorporado. Você pode incorporar código como este:\n\n\n::: {.cell hash='aula1_cache/html/unnamed-chunk-1_dcccf11947cb90986492da463b3a8c24'}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 2\n```\n:::\n:::\n\n\n## Você pode adicionar opções ao código executável como isto\n\n\n::: {.cell hash='aula1_cache/html/unnamed-chunk-2_71132a289239dbe43e5cea2d26a52975'}\n::: {.cell-output .cell-output-stdout}\n```\n[1] 4\n```\n:::\n:::\n\n\n## A opção `echo: false` desabilita a impressão do código (somente a saída é exibida)\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

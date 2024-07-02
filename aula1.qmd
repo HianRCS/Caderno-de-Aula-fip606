@@ -1,0 +1,30 @@
+---
+title: "Introdução ao R studio"
+format: html
+editor: visual
+---
+
+## R studio
+
+O RStudio é um ambiente de desenvolvimento integrado (IDE) gratuito e de código aberto para a linguagem de programação R. Ele oferece uma interface gráfica amigável e diversos recursos que facilitam a escrita, execução, depuração e análise de código R.
+
+## Arquivo qmd
+
+Os arquivos QMD (Quarto Markdown) são uma ferramenta poderosa para criar documentos dinâmicos e interativos no RStudio. Eles combinam a flexibilidade do Markdown para formatação de texto com o poder do código R para análise de dados, visualizações e geração de relatórios, em essência, os arquivos QMD são arquivos de texto simples que usam a sintaxe do Markdown para formatar o conteúdo textual e tags especiais para incorporar código R.
+
+## Renderizar o Documento
+
+Quando você clicar no botão Renderizar, um documento será gerado que inclui tanto o conteúdo quanto a saída do código incorporado. Você pode incorporar código como este:
+
+```{r}
+1 + 1
+```
+
+## Você pode adicionar opções ao código executável como isto
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+## A opção `echo: false` desabilita a impressão do código (somente a saída é exibida)

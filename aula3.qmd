@@ -1,0 +1,114 @@
+---
+title: "Tidyverse e Gráficos"
+format: html
+editor: visual
+warning: false
+mensage: false
+---
+
+## Tidyverse
+
+O Tidyverse, também conhecido como tidyverse, é um conjunto de pacotes R interligados que oferece uma interface unificada e intuitiva para realizar tarefas comuns em ciência de dados, desde a importação e manipulação de dados até a visualização e comunicação de resultados
+
+## Gráficos no R studio
+
+O pacote ggplot2 é uma ferramenta poderosa para criar gráficos de alta qualidade, personalizados e informativos, auxiliando na comunicação clara dos resultados.
+
+Permite personalizar todos os aspectos do gráfico, desde cores, legendas e eixos até a formatação de dados e a aplicação de estatísticas descritivas.
+
+```{r warning=FALSE, message=FALSE}
+
+library(ggthemes)
+library(tidyverse)
+library(patchwork)
+library(ggplot2)
+
+
+cr <- read_csv("https://raw.githubusercontent.com/emdelponte/paper-coffee-rust-Ethiopia/master/data/survey_clean.csv")
+
+glimpse(cr)
+
+
+cr |>
+  ggplot(aes(x = sev2, fill = region))+
+  geom_histogram()+
+  facet_grid(region ~ cultivar)+
+  scale_fill_manual(values = c("red", "blue"))+
+  theme_minimal(base_size = 14)+
+  theme(legend.position = "bottom")+
+  labs(y = "frequency",
+       x = "severity (%)", fill = "region")
+  #ggsave("crl.png", bg = "white")
+
+
+summary(cr$inc)
+
+cr|>
+  #group_by(cultivar) |>
+  summarize(sev_med = median(sev2),
+            sev_mean = mean(sev2),
+            sev_sd = sd(sev2))
+
+cr|>
+  ggplot(aes(inc, sev2))+
+  geom_point()
+
+
+```
+
+# Cria Subconjuntos
+
+Utiliza as funções 'select()' e 'filter()' do pacote **dplyr** para selecionar colunas e linhas, respectivamente
+
+```{r warning=FALSE, message=FALSE}
+# filtra Oromia
+cr_oromia <- cr |>
+  select(farm, region, cultivar, sev2)|>
+  filter(region  == "Oromia")
+cr_oromia
+# filtra SNNPR
+cr_pr <- cr |>
+  select(farm, region, cultivar, sev2)|>
+  filter(region  == "SNNPR")
+cr_pr
+
+
+```
+
+## Visualiza subconjuntos
+
+Usando o pacote ggplot podemos visualizar os dados
+
+```{r warning=FALSE, message=FALSE}
+p1 <- cr_oromia |>
+  ggplot(aes(cultivar, sev2, fill = cultivar))+
+  geom_boxplot()+
+  labs(title = "Oromia",
+       y = "Severity (%)") +
+  coord_flip()
+  
+p2 <- cr_pr |>
+  ggplot(aes(cultivar, sev2, fill = cultivar))+
+  geom_boxplot()+
+  labs(title = "SNNPR",
+       y = "Severity (%)") +
+  coord_flip()
+
+
+
+(p1 / p2) +
+  plot_layout(guides = 'collect',
+              axes = 'collect') + 
+  plot_annotation(title = "ferrugem do café na Etiopia",
+                  caption = "source: Del Ponte(2022)",)+
+  plot_annotation(tag_levels = 'A')
+ggsave("patch2.png", width = 5,
+       height = 4)
+
+p3 <- cr_oromia |>
+  ggplot(aes(x = sev2))+
+  geom_histogram()
+
+p1 + inset_element(p3, left = 0.6, bottom = 0.6, right = 1, top = 1)
+
+```

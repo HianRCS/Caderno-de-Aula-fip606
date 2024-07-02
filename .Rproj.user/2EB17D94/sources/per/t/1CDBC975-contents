@@ -1,0 +1,85 @@
+project:
+  type: website
+  output-dir: docs
+  
+execute: 
+  cache: true
+  freeze: auto
+  warning: false
+
+website:
+  title: "Web Site de 2 R"
+  favicon: logo.png
+  navbar:
+    pinned: true
+    logo: logo2.png
+    left:
+    - text: R básico
+      menu:
+      - href: aula1.qmd
+        text: Introdução ao RStudio
+      - href: aula2.qmd
+        text: Carregar os Pacotes e Dados
+      - href: aula3.qmd
+        text: Tidyverse e Gráficos
+      - href: aula4.qmd
+        text: Datapasta e Tabelas  
+      - href: aula5.qmd
+        text: Gráficos Diversos
+    - text: Testes e Análises
+      menu:
+      - href: aula6.qmd
+        text: Testes Estatísticos
+      - href: aula7.qmd
+        text: Análise e Transformação de Dados
+      - href: aula8.qmd
+        text: Anova e AACPD
+      - href: aula9.qmd
+        text: Regressão Linear e Outros Gráficos
+      - href: aula10.qmd
+        text: Corgraph e Gráficos
+    - text: Mapas No R
+      menu:
+      - href: aula11.qmd
+        text: Criando Mapas
+      
+    right: 
+       - icon: instagram
+         menu: 
+            - text: Hian Rodrigo Costa Silva
+              url: https://www.instagram.com/hiantsf/
+            - text: Emerson M. Del Ponte
+              url: https://www.instagram.com/emdelponte/
+            - text: Fitopatolofia UFV
+              url: https://www.instagram.com/fitopatologiaufv/
+       - icon: youtube
+         href: https://www.youtube.com/edelponte
+       - icon: github
+         menu:
+            - text: Hian Rodrigo Costa Silva
+              url: https://github.com/HianRCS
+            - text: Emerson M. Del Ponte
+              url: https://github.com/emdelponte
+      
+      
+  page-navigation: true
+  page-footer: 
+    left: "Copyright 2024, Hian Rodrigo Costa Silva"
+    background: "#323f45"
+
+
+format:
+  html:
+    fontsize: 1.1em
+    theme: 
+      dark: superhero
+      light: scarlet
+    code-copy: true
+    code-overflow: wrap
+    warning: false
+    toc: true
+
+
+
+
+editor: visual

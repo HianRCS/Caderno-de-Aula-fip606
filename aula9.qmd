@@ -1,0 +1,277 @@
+---
+title: "Regressão Linear e Outros Gráficos"
+format: html
+editor: visual
+warning: false
+mensage: false
+---
+
+## Parcela Subdividida
+
+```{r}
+library(gsheet)
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(lme4)
+library(car)
+library(performance)
+library(DHARMa)
+library(emmeans)
+library(multcomp)
+library(r4pde)
+library(broom)
+library(patchwork)
+library(cowplot)
+
+
+
+
+milho <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=1345524759")
+
+
+
+
+```
+
+## Regressão Linear
+
+A regressão linear é um método estatístico muito utilizado para modelar a relação entre duas variáveis, sendo uma variável dependente (Y) e uma ou mais variáveis independentes (X). Essa técnica é fundamental em diversos campos do conhecimento, como estatística.
+
+Regressão linear pressupõe que a relação entre a variável dependente (Y) e as variáveis independentes (X) seja linear, ou seja, que a alteração em uma unidade de X cause uma alteração proporcional em Y.
+
+```{r}
+
+estande <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=401662555")
+
+estande |>
+  ggplot(aes(trat, nplants))+
+  geom_jitter(width = 0.1, alpha = 0.5, color = "red") +
+  facet_wrap(~ exp) +
+  stat_summary(fun.data = "mean_cl_boot", color = "black") +
+  geom_smooth(method = lm, se = F, color = "orange")
+  
+exp1 <- estande |>
+  filter(exp == 1)
+
+
+exp1 |>
+  ggplot(aes(trat, nplants))+
+  geom_point()+
+  #ylim(1)
+  geom_smooth(method = "lm", se = F)
+
+
+lm1 <- lm(nplants ~ trat,
+          data = exp1)
+summary(lm1)
+
+
+glm1<- glm(nplants ~ trat, family = "gaussian",
+            data = exp1)
+
+summary(glm1)
+AIC(glm1)
+
+glmb1 <- glm(nplants ~ trat, family = poisson(link = "log"),
+             data = exp1)
+summary(glmb1)
+AIC(glmb1)
+
+glm1<- glm(nplants ~ trat, family = "gaussian",
+            data = estande)
+
+summary(glm1)
+AIC(glm1)
+
+glmb1 <- glm(nplants ~ trat, family = poisson(link = "log"),
+             data = estande)
+summary(glmb1)
+AIC(glmb1)
+
+
+exp2 <- estande |>
+  filter(exp == 2)
+
+
+exp2 |>
+  ggplot(aes(trat, nplants))+
+  geom_point()+
+  #ylim(0,001)
+  geom_smooth(se = F)
+
+lm2 <- lm(nplants ~ trat,
+          data = exp2)
+summary(lm2)
+
+glm2<- glm(nplants ~ trat, family = "gaussian",
+            data = exp2)
+
+summary(glm2)
+AIC(glm2)
+
+glmb2 <- glm(nplants ~ trat, family = poisson(link = "log"),
+             data = exp2)
+summary(glmb2)
+AIC(glmb2)
+
+glm2<- glm(nplants ~ trat, family = "gaussian",
+            data = estande)
+
+summary(glm2)
+AIC(glm2)
+
+glmb2 <- glm(nplants ~ trat, family = poisson(link = "log"),
+             data = estande)
+summary(glmb2)
+AIC(glmb2)
+
+exp3 <- estande |>
+  filter(exp == 3)
+
+
+exp3 |>
+  ggplot(aes(trat, nplants))+
+  geom_point()+
+  #ylim(0,001)
+  geom_smooth(method = "lm", se = F)
+
+
+lm3 <- lm(nplants ~ trat,
+          data = exp3)
+summary(lm3)
+
+glm3<- glm(nplants ~ trat, family = "gaussian",
+            data = exp3)
+
+summary(glm3)
+AIC(glm3)
+
+glmb3 <- glm(nplants ~ trat, family = poisson(link = "log"),
+             data = exp3)
+summary(glmb3)
+AIC(glmb3)
+
+glm3<- glm(nplants ~ trat, family = "gaussian",
+            data = estande)
+
+summary(glm3)
+AIC(glm3)
+
+glmb3 <- glm(nplants ~ trat, family = poisson(link = "log"),
+             data = estande)
+summary(glmb3)
+AIC(glmb3)
+
+
+
+
+
+```
+
+## Index
+
+```{r}
+
+milho |>
+  ggplot(aes(method, index)) +
+  geom_jitter(width = 0.1, alpha = 0.2, color = "red") +
+  facet_wrap(~ hybrid)+
+  stat_summary(fun.data = "mean_cl_boot", color = "black",
+               alpha = 0.5)
+milho
+  
+
+
+```
+
+## Modelo Para Subdividida
+
+```{r}
+milho <- milho |>
+  mutate(block = as.factor(block))
+
+mix2 <- lmer(sqrt(index) ~ hybrid*method + block + (1|block/hybrid), data = milho)
+
+Anova(mix2)
+
+check_normality(mix2)
+check_heteroscedasticity(mix2)
+
+plot(simulateResiduals(mix2))
+qqnorm(residuals (mix2))
+qqline(residuals(mix2))
+hist(residuals(mix2))
+
+medias_milho <- emmeans(mix2, 
+                        ~ hybrid | method,
+                        type = "response")
+
+medias_milho2 <- emmeans(mix2, 
+                        ~ hybrid | method,
+                        type = "response")
+
+cld(medias_milho, Letters = LETTERS)
+cld(medias_milho2, Letters = LETTERS)
+
+
+```
+
+## mix 3
+
+```{r}
+
+mix3 <- lmer(sqrt(yield) ~ hybrid*method + block + (1|block/hybrid), data = milho)
+
+
+Anova(mix3)
+check_normality(mix3)
+check_heteroscedasticity(mix3)
+
+
+
+```
+
+## Morfo Branco
+
+```{r}
+wm <- WhiteMoldSoybean
+wm |> 
+  ggplot(aes(inc, yld, group = factor(study)))+
+  geom_point()+
+  facet_wrap(~ study)+
+  geom_smooth(method = "lm", se = F)
+  theme_minimal()
+  
+morfo1 <- lm(yld ~ inc, data = wm)
+summary(morfo1)
+
+
+morfo2 <- wm |>
+  group_by(study) |>
+  do(tidy(lm(.$yld ~ .$inc),conf.int = TRUE))
+morfo2
+
+p3 <- morfo2 |>
+  filter(term == "Intercept") |>
+  ggplot(aes(x = estimate))+
+  geom_histogram(bins = 8, color = "white", fill = "gray50")+
+  theme_r4pde()+
+  labs(x= "Intercept", y = "Frequency")
+
+p4 <- morfo2 |>
+  filter(term == ".$inc") |>
+  ggplot(aes(x = estimate))+
+  geom_histogram(bins = 8, color = "white", fill = "gray50")+
+  theme_r4pde()+
+  labs(x= "Slope", y = "Frequency")
+
+p3 | p4
+
+morfo3 <- lmer(yld ~ inc + (inc | study), data = wm,
+               REML = F)
+
+summary(morfo3)
+
+
+```

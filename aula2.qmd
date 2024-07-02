@@ -1,0 +1,53 @@
+---
+title: "Carregar os Pacotes e Dados"
+format: html
+editor: visual
+---
+
+## Carregando os Pacotes
+
+No RStudio, a função library() serve para carregar pacotes R em seu ambiente de trabalho, tornando as funções e objetos contidos nesses pacotes disponíveis para uso imediato.
+
+## Pacotes readxl e gsheet
+
+O RStudio oferece dois pacotes poderosos para trabalhar com dados em planilhas do Excel e Google Sheets: readxl e gsheet. Cada um possui características e funcionalidades distintas, tornando-os adequados para diferentes cenários.
+
+A função do pacote readxl é ler e importar arquivos do Excel (XLS e XLSX) para o ambiente R. E a função do pacote gsheet é acessar e manipular dados diretamente em planilhas do Google Sheets.
+
+```{r warning=FALSE, message=FALSE}
+library (ec50estimator)
+library(readxl)
+library(tidyverse)
+library (gsheet)
+library(ggplot2)
+
+
+df4 <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=983033137")
+
+df1 <- multi_isolate
+
+
+df2 <- read_excel("dados-diversos.xlsx")
+df21 <- read_excel("dados-diversos.xlsx", 2)
+
+
+
+g1 <-  df4 %>% 
+  ggplot(aes(trat, comp)) +
+  geom_boxplot (outlier.colour = NA,
+                fill = "green")+
+  geom_jitter(width = 0.05,
+              color = "blacK",
+              shape = 2,
+              size = 3)
+g1 + theme_classic()+
+  labs(x = "tratamento",
+       y = "comprimento (mm)",
+       title = "meu primeiro ggplot",
+       caption = "Fonte: dados diversos")+
+  scale_y_continuous(limits = c(0,20),
+                     n.breaks = 10)
+
+
+
+```

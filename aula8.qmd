@@ -1,0 +1,182 @@
+---
+title: "Anova e AACPD"
+format: html
+editor: visual
+warning: false
+mensage: false
+---
+
+## Anova de Blocos Casualizados
+
+A análise de variância em blocos casualizados (ANOVA em DBC) é um método estatístico utilizado para comparar o efeito de diferentes tratamentos em um experimento quando há um fator de bloqueio que pode influenciar os resultados. Essa técnica é particularmente útil quando os dados apresentam heterogeneidade em um grupo, por exemplo, devido a diferenças no solo em um experimento agrícola.
+
+```{r}
+library(tidyverse)
+library(gsheet)
+library(patchwork)
+library(ggplot2)
+library(ggthemes)
+library(performance)
+library(emmeans)
+library(multcomp)
+library(MASS)
+library(DHARMa)
+library(forcats)
+library(writexl)
+library(epifitter)
+library(agricolae)
+
+soja <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=866852711")
+
+soja <- soja |>
+  mutate(TRAT = as.factor(TRAT),
+         BLOCO = as.factor(BLOCO))
+
+
+dfc <- soja |>
+  ggplot(aes(TRAT, DFC))+
+  geom_jitter(width = 0.05, color = "gray70")+
+  stat_summary(fun.data = "mean_cl_boot", color = "black",
+               alpha = 0.5)
+dfc
+
+fer <- soja |>
+  ggplot(aes(TRAT, FER))+
+  geom_jitter(width = 0.05, color = "gray70")+
+  stat_summary(fun.data = "mean_cl_boot", color = "black",
+               alpha = 0.5)
+fer
+
+prod <- soja |>
+  ggplot(aes(TRAT, PROD))+
+  geom_jitter(width = 0.05, color = "gray70")+
+  stat_summary(fun.data = "mean_cl_boot", color = "black",
+               alpha = 0.5)
+prod
+
+
+(dfc / fer / prod)
+
+
+```
+
+## Anova de dfc
+
+```{r}
+aov_dfc <- lm (DFC ~ TRAT + BLOCO,
+               data = soja)
+
+anova(aov_dfc)
+check_normality(aov_dfc)
+check_heteroscedasticity(aov_dfc)
+
+medias_dfc <- emmeans(aov_dfc, ~ TRAT)
+medias_dfc
+pwpm(medias_dfc)
+
+cld(medias_dfc, Letters = LETTERS)
+
+
+```
+
+## Anova de fer
+
+```{r}
+
+b <- boxcox(lm(soja$FER + 0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+max(b$y)
+soja$FER2 <- (soja$FER ^ lambda - 1) / lambda
+
+aov_FER2 <- lm (FER2 ~ TRAT + BLOCO,
+               data = soja)
+
+anova(aov_FER2)
+check_normality(aov_FER2)
+check_heteroscedasticity(aov_FER2)
+
+medias_FER2 <- emmeans(aov_FER2, ~ TRAT, type = "response")
+medias_FER2
+pwpm(medias_FER2)
+
+cld(medias_FER2, Letters = LETTERS)
+
+
+
+```
+
+## Anova de prod
+
+```{r}
+aov_prod <- lm (PROD ~ TRAT + BLOCO,
+               data = soja)
+
+anova(aov_prod)
+check_normality(aov_prod)
+check_heteroscedasticity(aov_prod)
+
+medias_prod <- emmeans(aov_prod, ~ TRAT)
+medias_prod
+pwpm(medias_prod)
+
+medias_prod_grupo <- cld(medias_prod, Letters = LETTERS)
+
+
+```
+
+## Gráficos Com os Dados
+
+```{r}
+
+df_prod <- data.frame(medias_prod_grupo)
+df_prod |>
+  ggplot(aes(TRAT, emmean))+
+  geom_point()+
+  ylim(3000, 6500)+
+  geom_errorbar(aes(min = lower.CL,
+                    max = upper.CL),
+                width = 0.1)+
+  annotate(geom = "text", x = 1.2,  y = 4200,
+           label = "A")
+
+knitr::kable(df_prod |> dplyr:: select(TRAT, emmean))
+write_xlsx(df_prod, "df.xlsx")
+
+```
+
+## Dados Curve AACPD
+
+A Área abaixo da Curva de Progresso da Doença (AACPD) é um parâmetro quantitativo utilizado em diversos patossistemas para analisar o progresso de doenças em plantas. A AACPD é obtida através da integração da curva de progresso da doença, que representa a relação entre a severidade da doença e o tempo. Essa área fornece uma medida cumulativa da intensidade da doença ao longo do tempo, permitindo uma avaliação mais abrangente do impacto da doença na cultura.
+
+```{r}
+
+curve <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=1807247585")
+
+Irrigation <- curve |>
+  ggplot(aes(day, severity))+
+  geom_jitter(width = 0.05, color = "darkblue")+
+  stat_summary(fun.data = "mean_cl_boot", color = "black",
+               alpha = 0.5)+
+  facet_wrap(~~ Irrigation)
+Irrigation
+
+curve |>
+  group_by(day, Irrigation) |>
+  summarise(mean_sev = mean (severity)) |>
+  ggplot(aes(day, mean_sev))+
+  geom_point()+
+  geom_line(color = "red")+
+  facet_wrap(~~Irrigation)
+  
+curve2 <- curve |>
+  group_by(Irrigation, rep) |>
+  summarise(aacpd = AUDPC(day, severity))
+
+m_curve <- lm(aacpd ~ Irrigation + factor(rep),
+              data = curve2)
+
+anova(m_curve)
+cv.model(m_curve)
+
+
+```

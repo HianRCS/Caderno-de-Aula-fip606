@@ -1,0 +1,217 @@
+---
+title: "Analise e Transformação de Dados"
+format: html
+editor: visual
+editor_options: 
+chunk_output_type: console
+warning: false
+mensage: false
+---
+
+## Pacote perfomance e DHARMa
+
+O pacote performance no RStudio oferece diversas funções para avaliar o desempenho de modelos de aprendizado de máquina, principalmente no contexto de classificação e regressão.
+
+O pacote DHARMa no RStudio oferece ferramentas para análise de resíduos de modelos de regressão linear mista (generalizada) hierárquicos (multi-nível).
+
+```{r}
+library(tidyverse)
+library(gsheet)
+library(ggthemes)
+library(performance)
+library(DHARMa)
+library(emmeans)
+library(multcomp)
+library(agricolae)
+library(car)
+library(MASS)
+
+inseticida <- InsectSprays
+
+
+inseticida |>
+  ggplot(aes(spray, count))+
+  geom_boxplot()
+
+
+
+```
+
+## Anova
+
+A ANOVA testa se existe pelo menos uma diferença significativa entre as médias dos grupos. Se o teste for significativo, significa que pelo menos um grupo possui uma média diferente dos demais.
+
+```{r}
+
+m1 <- lm(count ~ spray,
+         data = inseticida)
+
+anova(m1)
+m1$residuals
+hist(m1$residuals)
+qqnorm(m1$residuals)
+qqline(m1$residuals)
+shapiro.test(m1$residuals)
+bartlett.test(count ~spray,
+              data = inseticida)
+
+
+
+check_normality(m1)
+check_heteroscedasticity(m1)
+
+
+plot(simulateResiduals(m1))
+
+
+```
+
+## Transformação Por Raiz Quadrada
+
+A transformação de raiz quadrada é útil para lidar com dados que apresentam heterocedasticidade, ou seja, quando a variância dos dados aumenta com a média.
+
+```{r}
+inseticida <- inseticida |>
+  mutate(count2 = sqrt(count))
+
+inseticida |>
+  ggplot(aes(spray, count2))+
+  geom_boxplot()
+
+
+```
+
+## Teste Com Dados Transformados
+
+```{r}
+
+m2 <- lm(count2 ~ spray,
+         data = inseticida)
+
+anova(m2)
+m1$residuals
+hist(m2$residuals)
+qqnorm(m2$residuals)
+qqline(m2$residuals)
+shapiro.test(m2$residuals)
+bartlett.test(count ~spray,
+              data = inseticida)
+
+
+check_normality(m2)
+check_heteroscedasticity(m2)
+
+
+plot(simulateResiduals(m2))
+
+
+
+```
+
+## Pacote emmeans
+
+O pacote emmeans no RStudio oferece ferramentas para realizar análises de médias ajustadas em modelos de regressão linear e modelos de ANOVA. A principal função do pacote emmeans é a função emmeans(), que permite calcular as médias ajustadas para cada nível de um fator, controlando por outros fatores no modelo.
+
+```{r}
+
+
+m2_medias <- emmeans(m2, ~ spray)
+plot(m2_medias)
+
+
+cld(m2_medias)
+
+pwpm(m2_medias)
+pwpp(m2_medias)
+pairs(m2_medias)
+
+
+```
+
+## alternativa 2 - não paramétrico
+
+```{r}
+
+kruskal.test(count ~ spray,
+             data = inseticida)
+
+m3 <- kruskal(inseticida$count,
+        inseticida$spray,
+        group = TRUE)
+
+m3
+
+```
+
+## alternativa 3 - GLMs
+
+```{r}
+
+m4 <- glm(count ~ spray,
+          family = poisson,
+          data = inseticida)
+
+summary(m4)
+anova(m4)
+Anova(m4)
+
+plot(simulateResiduals(m4))
+
+m4_medias <- emmeans(m4, ~spray,
+                     type = "response")
+
+cld(m4_medias)
+
+```
+
+## Transformação box-cox
+
+No RStudio, a transformação de Box-Cox é uma técnica útil para normalizar dados que não seguem uma distribuição normal, o que pode ser um pressuposto importante para diversos métodos estatísticos. Essa transformação permite adequar os dados à forma de uma curva em forma de sino, o que facilita a interpretação dos resultados e a confiabilidade das análises.
+
+```{r}
+
+
+b <- boxcox(lm(inseticida$count + 0.1 ~ 1))
+lambda <- b$x[which.max(b$y)]
+max(b$y)
+
+inseticida$count3 <- (inseticida$count ^ lambda - 1) / lambda
+inseticida$count3
+
+```
+
+## dados da internet
+
+```{r}
+
+
+li <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=2023059672")
+
+li |>
+  ggplot(aes(factor(dose), severity, color = factor(dose)))+
+  geom_jitter(width =0.1)+
+  facet_wrap(~treat)
+
+
+
+
+
+```
+
+## modelo fatorial (two-way anova)
+
+```{r}
+
+mf <- lm(severity ~ treat*factor(dose), 
+         data = li)
+
+anova(mf)
+plot(simulateResiduals(mf))
+
+mf_medias <- emmeans(mf, ~ treat | dose)
+cld(mf_medias)
+
+mf_medias <- emmeans(mf, ~ dose | treat)
+cld(mf_medias)
+
+```

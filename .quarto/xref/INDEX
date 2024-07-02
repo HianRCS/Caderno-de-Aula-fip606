@@ -1,0 +1,41 @@
+{
+  "index.qmd": {
+    "index.html": "76eeb012"
+  },
+  "about.qmd": {
+    "about.html": "271d0b1d"
+  },
+  "aula1.qmd": {
+    "aula1.html": "4cccd9bf"
+  },
+  "aula10.qmd": {
+    "aula10.html": "6f27307c"
+  },
+  "aula11.qmd": {
+    "aula11.html": "20212d62"
+  },
+  "aula2.qmd": {
+    "aula2.html": "6b4dfe63"
+  },
+  "aula3.qmd": {
+    "aula3.html": "33f56241"
+  },
+  "aula4.qmd": {
+    "aula4.html": "68b1ec22"
+  },
+  "aula5.qmd": {
+    "aula5.html": "5f3fd3dc"
+  },
+  "aula6.qmd": {
+    "aula6.html": "dcc9d71c"
+  },
+  "aula7.qmd": {
+    "aula7.html": "7e33e7d3"
+  },
+  "aula8.qmd": {
+    "aula8.html": "feb0eb56"
+  },
+  "aula9.qmd": {
+    "aula9.html": "e94d4a15"
+  }
+}

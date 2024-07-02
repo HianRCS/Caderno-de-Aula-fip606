@@ -1,0 +1,158 @@
+---
+title: "Testes Estatísticos"
+format: html
+editor: visual
+warning: false
+mensage: false
+---
+
+## Teste Inferencial Dois Grupos Independentes
+
+O teste inferencial de dois grupos independentes, também conhecido como teste t de Student para amostras independentes, é uma ferramenta estatística utilizada para comparar a média de duas amostras de dados independentes. Esse teste é útil para determinar se existe uma diferença estatisticamente significativa entre as médias das duas amostras.
+
+```{r}
+
+library(gsheet)
+library(tidyverse)
+library(ggthemes)
+library(report)
+library(tidyverse)
+library(emmeans)
+library(multcomp)
+library(multcompView)
+library(DHARMa)
+library(performance)
+library(dbplyr)
+library(dplyr)
+
+
+
+mg <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=983033137")
+
+
+```
+
+## Visualiza os Dados
+
+```{r}
+
+mg |>
+  ggplot(aes (trat, comp))+
+  geom_boxplot()
+
+
+```
+
+## Teste T
+
+```{r}
+mg2 <- mg |>
+  pivot_wider(names_from = trat,
+              values_from = comp)
+
+teste1 <- t.test(mg2$control, mg2$Mg2,
+       var.equal = TRUE)
+
+shapiro.test(mg2$control)
+shapiro.test(mg2$Mg2)
+hist(mg2$control)
+hist(mg2$Mg2)
+
+qqnorm(mg2$control)
+qqline(mg2$control)
+qqnorm(mg2$Mg2)
+qqline(mg2$Mg2)
+
+var.test(mg2$control, mg2$Mg2)
+
+
+
+report(teste1)
+
+
+```
+
+## Dois Grupos Dependentes
+
+```{r}
+
+escala <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=1729131173")
+
+escala |>
+  ggplot(aes(assessment, acuracia))+
+  geom_boxplot()
+
+escala2 <- escala |>
+  dplyr::select(assessment, rater, acuracia) |>
+  pivot_wider(names_from = assessment,
+              values_from = acuracia)
+
+shapiro.test(escala2$Unaided)
+shapiro.test(escala2$Aided1)
+var.test(escala2$Unaided, escala2$Aided1)
+
+t.test(escala2$Aided1, escala2$Unaided,
+       paired = TRUE,
+       var.equal = FALSE)
+
+```
+
+## Teste Não Paramétrico
+
+Os testes não paramétricos, também conhecidos como testes livres de distribuição, são métodos estatísticos utilizados para comparar duas ou mais amostras de dados sem a necessidade de supor que os dados sigam uma distribuição normal. Isso os torna úteis em diversas situações, como quando os dados são categóricos ordinais, possuem outliers ou apresentam distribuições não simétricas.
+
+```{r}
+
+wilcox.test(escala2$Aided1,
+            escala2$Unaided,
+            paired = TRUE)
+
+
+```
+
+## Três ou Mais Grupos
+
+```{r}
+
+micelial <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit#gid=959387827")
+
+micelial |>
+  ggplot(aes(especie, tcm))+
+  geom_jitter(width = 0.05 )
+
+m1 <- lm(tcm ~ especie, data = micelial)
+anova(m1)
+summary(m1)
+
+
+
+medias1 <- emmeans(m1, ~ especie)
+cld(medias1)
+
+hist(m1$residuals)
+shapiro.test(m1$residuals)
+bartlett.test(tcm ~ especie, data = micelial)
+plot(simulateResiduals(m1))
+
+check_normality(m1)
+check_heteroscedasticity(m1)
+check_model(m1)
+
+
+```
+
+## InsectSprays
+
+O InsectSprays é um conjunto de dados disponível no R que contém o número de insetos em unidades experimentais agrícolas tratadas com diferentes inseticidas.
+
+```{r}
+
+inseticida <- InsectSprays
+
+
+inseticida |>
+  ggplot(aes(spray, count))+
+  geom_boxplot()
+
+
+```

@@ -1,0 +1,109 @@
+---
+title: "Mapas Pelo R"
+editor: visual
+warning: false
+mensage: false
+---
+
+## Mapas Pelo R Studio
+
+O RStudio oferece diversas ferramentas e pacotes para criar e analisar mapas, possibilitando visualizar dados geoespaciais de forma clara e informativa. Seja você um profissional experiente ou um iniciante no mundo da geoanálise, o RStudio oferece recursos para atender às suas necessidades.
+
+A escolha do pacote e das ferramentas para criar mapas depende do tipo de dados geoespaciais, do objetivo da análise e do nível de experiência do usuário.
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(rnaturalearth)
+library(remotes)
+library(rnaturalearthhires)
+library(r4pde)
+library(ggthemes)
+library(ggspatial)
+library(plotly)
+library(leaflet)
+library(scatterpie)
+library(ggrepel)
+library(gsheet)
+
+
+
+remotes::install_github("ropensci/rnaturalearthhires")
+
+BRA <- ne_states(country = "Brazil",
+                 returnclass = "sf")
+
+PA <- BRA |>
+  filter(name_en== "Pará")
+
+world <- ne_countries()
+
+sbr <- RustSoybean
+
+sbr |> 
+  ggplot(aes(longitude, latitude))+
+  geom_point()+
+  coord_sf()
+
+
+bra <- ggplot(BRA)+
+  geom_sf(fill = "yellow",
+          color = "darkgreen",
+          linewidth = 1)+
+  geom_sf(data = PA, fill = "red")+
+  geom_point(data = sbr, aes(longitude, latitude),
+             color = "blue")+
+  annotation_north_arrow()+
+  theme_map()
+
+ggplotly(bra)
+
+
+
+```
+
+## Mapa Interativo Pelo Google
+
+```{r}
+
+leaflet(sbr) |> 
+  addTiles() |>
+  setView(lng =  -48.8743, lat = -1.72951, zoom = 3) |>
+  addCircleMarkers(radius = 2)
+  
+
+
+leaflet(sbr) |> 
+  addProviderTiles(providers$Esri.NatGeoWorldMap) |>
+  setView(lng =  -48.8743, lat = -1.72951, zoom = 3) |>
+  addCircleMarkers(radius = 2)
+
+
+```
+
+## Mapa Com Tabela de Pizza
+
+```{r}
+
+mapa <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1pAIFKsdKxk_UQQXdYwIO-O5NOkYNhpclImJcLziYnk4/edit?usp=sharing ")
+
+ggplot(BRA) +
+  geom_sf(fill = "white", color = "black", linewidth = 0.5) +
+  coord_sf()+
+  geom_point(data = mapa, aes(lon, lat))+
+  geom_scatterpie(aes(x=lon, y=lat, r = 0.6),
+                  alpha = 0.8, color = NA, data = mapa,
+                  cols = c ("DFC",
+                            "MA",
+                            "FER",
+                            "ANTR",
+                            "OIDIO"))+
+  geom_text_repel(data = mapa, aes(lon, lat, label = Local),
+                  size = 2, nudge_x = 0.2, nudge_y = 0.27, color = 'gray30', family = "Arial")+
+  ggthemes::scale_fill_calc()+
+  ggthemes::theme_map()+
+  labs(x = "Longitude", y = "Laititude", legend = "", fill = "Doença")+
+  theme(legend.position = "bottom", text = element_text(family = "Arieal", size = 8))
+
+
+```
